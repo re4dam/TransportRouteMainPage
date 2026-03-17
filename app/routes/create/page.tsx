@@ -164,7 +164,7 @@ export default function CreateRoutePage() {
 
         <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end gap-4">
           <Link 
-            href="/" 
+            href="/routes" 
             className="px-6 py-3 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors"
           >
             Cancel

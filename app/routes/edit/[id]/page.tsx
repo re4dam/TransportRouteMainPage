@@ -69,7 +69,7 @@ export default function EditRoutePage() {
 
     try {
       // Send the PUT request to update the specific record
-      const res = await fetch(`http://localhost:5285/api/TransitRoutes/${routeId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/TransitRoutes/${routeId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -203,7 +203,7 @@ export default function EditRoutePage() {
 
         <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end gap-4">
           <Link 
-            href="/" 
+            href="/routes" 
             className="px-6 py-3 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors"
           >
             Cancel
