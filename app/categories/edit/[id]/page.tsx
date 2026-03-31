@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { CategoryRequest } from '@/types';
 import { apiFetch } from '@/lib/apiClient';
 
+export const dynamic = 'force-dynamic';
+
 export default function EditCategoryPage() {
   const router = useRouter();
   const params = useParams(); 
