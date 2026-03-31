@@ -15,9 +15,8 @@ export default async function CategoriesPage(props: { searchParams: SearchParams
   let totalPages = 0;
   
   try {
-    const res = await apiFetch(`/Category?pageNumber=${currentPage}&pageSize=12`, { 
-        cache: 'no-store' 
-    });
+    const endpoint = `/Category?pageNumber=${currentPage}&pageSize=12`;
+    const res = await apiFetch(endpoint, { cache: 'no-store' });
     
     if (res.ok) {
         const data = await res.json();
