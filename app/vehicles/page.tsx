@@ -1,73 +1,47 @@
-'use client';
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { VehicleResponse } from '@/types';
+import { apiFetch } from '@/lib/apiClient';
+import VehicleActions from '@/components/VehicleActions';
 
-export default function VehiclesPage() {
-  const [vehicles, setVehicles] = useState<VehicleResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
-  useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Vehicle`);
-        if (response.ok) {
-          const data = await response.json();
-          setVehicles(data);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchVehicles();
-  }, []);
+export default async function VehiclesPage(props: { searchParams: SearchParams }) {
+  // 1. Read URL parameters for Pagination
+  const searchParams = await props.searchParams;
+  const pageParam = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 12) : 1;
+  const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+  const pageSize = 12;
 
-  // 🔴 THE DELETE FUNCTION 🔴
-  const handleDelete = async (id: number, vehicleName: string) => {
-    const confirmed = window.confirm(`Are you sure you want to remove the vehicle "${vehicleName}" from the fleet?`);
-    if (!confirmed) return;
-
-    setIsDeleting(id);
+  // 2. Fetch the paginated data directly from the C# Backend
+  let vehicles = [];
+  let totalPages = 0;
+  let totalCount = 0;
+  
+  try {
+    const endpoint = `/Vehicle?pageNumber=${currentPage}&pageSize=${pageSize}`;
+    const res = await apiFetch(endpoint, { cache: 'no-store' });
     
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Vehicle/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete the vehicle.');
-      }
-
-      // Optimistic UI: Instantly remove it from the table
-      setVehicles((prev) => prev.filter((vehicle) => vehicle.id !== id));
-      
-    } catch (err: any) {
-      alert(err.message);
-    } finally {
-      setIsDeleting(null);
+    if (res.ok) {
+        const data = await res.json();
+        vehicles = data.items || [];
+        totalPages = data.totalPages || 0;
+        totalCount = data.totalCount || vehicles.length;
+    } else {
+        const errorText = await res.text();
+        console.error(`🚨 C# API ERROR: ${res.status} - ${errorText}`);
     }
-  };
-
-  // Simple client-side pagination math
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = vehicles.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(vehicles.length / itemsPerPage);
+  } catch (error) {
+    console.error("🚨 NEXT.JS FETCH CRASH:", error);
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* 1. Aligned Header Row - Matching Routes Style */}
+      {/* 1. Aligned Header Row */}
       <div className="flex justify-between items-end border-b-2 border-indigo-100 pb-4">
         <div>
           <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 tracking-tight">
             Available Vehicles
           </h1>
-          <p className="text-sm text-indigo-400 mt-2 font-medium">Manage and track your active transit paths</p>
+          <p className="text-sm text-indigo-400 mt-2 font-medium">Manage and track your active fleet</p>
         </div>
         <Link
           href="/vehicles/create"
@@ -78,22 +52,15 @@ export default function VehiclesPage() {
       </div>
 
       {/* Stats Badge */}
-      <div className="mb-6 flex items-center gap-2">
+      <div className="mb-6 mt-4 flex items-center gap-2">
         <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
-          {vehicles.length} Total
+          {totalCount} Total
         </span>
-        {isLoading && (
-          <span className="text-sm text-slate-400 italic">Syncing...</span>
-        )}
       </div>
 
-      {/* 2. Main Data Grid - Replaced Table with Cards */}
-      {isLoading ? (
-        <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm">
-          <p className="text-slate-500 text-lg font-medium">Loading vehicles...</p>
-        </div>
-      ) : currentItems.length === 0 ? (
-        <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm">
+      {/* 2. Main Data Grid */}
+      {vehicles.length === 0 ? (
+        <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm mt-6">
           <p className="text-slate-500 text-lg font-medium">No vehicles found.</p>
           <Link href="/" className="text-indigo-600 font-bold mt-4 inline-block hover:underline">
             Go Back Home
@@ -101,7 +68,7 @@ export default function VehiclesPage() {
         </div>
       ) : (
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {currentItems.map((vehicle) => (
+          {vehicles.map((vehicle: any) => (
             <li
               key={vehicle.id}
               className="group bg-white/80 backdrop-blur-sm border border-indigo-50 rounded-2xl p-6 shadow-lg shadow-indigo-100/50 hover:shadow-2xl hover:-translate-y-2 hover:bg-white transition-all duration-300 ease-out relative overflow-hidden"
@@ -115,7 +82,7 @@ export default function VehiclesPage() {
                 </h2>
               </div>
 
-              {/* Vehicle Info Box - Similar to Route Info Box */}
+              {/* Vehicle Info Box */}
               <div className="mt-2 bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
@@ -133,49 +100,45 @@ export default function VehiclesPage() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="mt-6 pt-6 border-t border-slate-100 flex items-center justify-between gap-3">
-                <Link 
-                  href={`/vehicles/edit/${vehicle.id}`} 
-                  className="flex-1 px-4 py-2 bg-indigo-50 border border-indigo-200 rounded-lg text-sm font-bold text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 transition-all"
-                >
-                  Edit
-                </Link>
-                <button 
-                  onClick={() => handleDelete(vehicle.id, vehicle.vehicleName)}
-                  disabled={isDeleting === vehicle.id}
-                  className="flex-1 px-4 py-2 bg-rose-50 border border-rose-200 rounded-lg text-sm font-bold text-rose-700 hover:bg-rose-100 hover:border-rose-300 transition-all"
-                >
-                  {isDeleting === vehicle.id ? 'Deleting...' : 'Delete'}
-                </button>
-              </div>
+              {/* 3. Inject the Interactive Client Component */}
+              <VehicleActions id={vehicle.id} vehicleName={vehicle.vehicleName} />
             </li>
           ))}
         </ul>
       )}
 
-      {/* 3. Pagination Controls - Matching Routes Style */}
+      {/* 4. Pagination Controls - Using Standard HTML Links */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-8 pt-4 border-t border-slate-100">
-          <button
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            &larr; Previous
-          </button>
+          {currentPage > 1 ? (
+            <Link 
+              href={`/vehicles?page=${currentPage - 1}`}
+              className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm"
+            >
+              &larr; Previous
+            </Link>
+          ) : (
+            <span className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold text-gray-400 opacity-50 cursor-not-allowed">
+              &larr; Previous
+            </span>
+          )}
 
           <span className="text-sm font-medium text-slate-500">
             Page {currentPage} of {totalPages}
           </span>
 
-          <button
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages || totalPages === 0}
-            className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next &rarr;
-          </button>
+          {currentPage < totalPages ? (
+            <Link 
+              href={`/vehicles?page=${currentPage + 1}`}
+              className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm"
+            >
+              Next &rarr;
+            </Link>
+          ) : (
+             <span className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold text-gray-400 opacity-50 cursor-not-allowed">
+              Next &rarr;
+            </span>
+          )}
         </div>
       )}
     </div>
