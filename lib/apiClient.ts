@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5285/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5285/api';
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     const url = `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
