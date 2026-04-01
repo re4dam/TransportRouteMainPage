@@ -70,8 +70,6 @@ export default function CreateVehiclePage() {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error('Failed to assign the vehicle.');
-
       router.push('/vehicles'); 
     } catch (err: any) {
       setError(err.message);

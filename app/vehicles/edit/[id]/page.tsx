@@ -81,8 +81,6 @@ export default function EditVehiclePage() {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error('Failed to update vehicle.');
-
       router.push('/vehicles');
     } catch (err: any) {
       setError(err.message);

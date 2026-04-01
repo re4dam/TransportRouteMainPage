@@ -23,13 +23,7 @@ export default function VehicleActions({ id, vehicleName }: { id: number, vehicl
         headers: { 'X-CSRF-Token': token || '' }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete. Ensure no vehicles are actively using this vehicle before deleting.');
-      }
-
-      // Success! This tells the Next.js Server Component to instantly re-fetch the data!
       router.refresh(); 
-      
     } catch (err: any) {
       alert(err.message); 
     } finally {
