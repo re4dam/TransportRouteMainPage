@@ -53,6 +53,7 @@ export default function EditCategoryPage() {
       const response = await apiFetch(`/Category/${categoryId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token || '' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 

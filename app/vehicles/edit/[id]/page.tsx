@@ -77,6 +77,7 @@ export default function EditVehiclePage() {
       const response = await apiFetch(`/Vehicle/${vehicleId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token || '' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
