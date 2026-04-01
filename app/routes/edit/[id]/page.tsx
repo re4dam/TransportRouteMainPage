@@ -82,10 +82,6 @@ export default function EditRoutePage() {
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to update route. Please check your backend.");
-      }
-
       router.refresh();
       router.push("/routes");
     } catch (err: any) {

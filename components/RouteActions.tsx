@@ -29,10 +29,6 @@ export default function RouteActions({ routeId }: { routeId: number }) {
         credentials: "include"
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to delete the route.");
-      }
-
       // 3. Force Next.js to re-fetch the server component data to remove the item from the screen
       router.refresh();
     } catch (error) {

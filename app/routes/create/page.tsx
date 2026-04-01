@@ -48,11 +48,7 @@ export default function CreateRoutePage() {
         credentials: 'include',
         body: JSON.stringify(formData),
       });
-
-      if (!res.ok) {
-        throw new Error("Failed to create route. Please check your backend.");
-      }
-
+      
       router.refresh();
       router.push("/routes");
     } catch (err: any) {
