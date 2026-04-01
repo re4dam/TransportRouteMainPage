@@ -11,6 +11,7 @@ export default function LoginPage() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // <-- New state
 
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setIsSubmitting(true);
     setError("");
 
     try {
@@ -32,15 +34,16 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
       });
 
-      if (res.ok) {
-        localStorage.setItem("isLoggedIn", "true"); // Set a simple flag for our Navbar
-        router.push("/");
-      } else {
+      if (!res.ok) {
         const errorText = await res.text();
-        setError(errorText || "Invalid username or password.");
+        throw new Error(errorText || "Invalid username or password.");
       }
-    } catch (err) {
-      setError("Failed to connect to the server.");
+
+      localStorage.setItem("isLoggedIn", "true"); // Set a simple flag for our Navbar
+      router.push("/");
+    } catch (err: any) {
+      setError(err?.message || "Failed to connect to the server.");
+      setIsSubmitting(false);
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +96,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isSubmitting}
             className="w-full rounded bg-blue-600 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:bg-blue-300"
           >
             {isLoading ? "Logging in..." : "Log In"}

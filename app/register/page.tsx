@@ -10,6 +10,7 @@ export default function RegisterPage() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // <-- New state
 
@@ -20,6 +21,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setIsSubmitting(true);
     setError("");
 
     try {
@@ -31,14 +33,10 @@ export default function RegisterPage() {
         body: JSON.stringify(formData),
       });
 
-      if (res.ok) {
-        router.push("/login");
-      } else {
-        const errorText = await res.text();
-        setError(errorText || "Registration failed.");
-      }
-    } catch (err) {
-      setError("Failed to connect to the server.");
+      router.push("/login");
+    } catch (err: any) {
+      setError(err?.message || "Failed to connect to the server.");
+      setIsSubmitting(false);
     } finally {
       setIsLoading(false);
     }
