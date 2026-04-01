@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/apiClient";
+import { useToast } from "@/components/ToastClient";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function LoginPage() {
     password: "",
   });
   const [error, setError] = useState("");
+  const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // <-- New state
@@ -34,15 +36,12 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Invalid username or password.");
-      }
+      showToast('Login successful! Redirecting...', 'success');
 
       localStorage.setItem("isLoggedIn", "true"); // Set a simple flag for our Navbar
       router.push("/");
     } catch (err: any) {
-      setError(err?.message || "Failed to connect to the server.");
+      showToast(err?.message || "Failed to connect to the server.", 'error');
       setIsSubmitting(false);
     } finally {
       setIsLoading(false);

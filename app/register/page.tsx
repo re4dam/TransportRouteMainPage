@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/apiClient";
+import { useToast } from "@/components/ToastClient";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function RegisterPage() {
     password: "",
   });
   const [error, setError] = useState("");
+  const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // <-- New state
@@ -34,9 +36,11 @@ export default function RegisterPage() {
         body: JSON.stringify(formData),
       });
 
+      showToast('Registration successful! Please log in.', 'success');
+
       router.push("/login");
     } catch (err: any) {
-      setError(err?.message || "Failed to connect to the server.");
+      showToast(err?.message || "Failed to connect to the server.", 'error');
       setIsSubmitting(false);
     } finally {
       setIsLoading(false);
