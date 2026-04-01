@@ -57,8 +57,6 @@ export default function EditCategoryPage() {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error('Failed to update category.');
-
       // Success! Go back to the table
       router.push('/categories');
     } catch (err: any) {

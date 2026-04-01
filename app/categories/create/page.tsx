@@ -33,8 +33,6 @@ export default function CreateCategoryPage() {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error('Failed to create category.');
-
       // Kick back to the categories table on success
       router.push('/categories');
     } catch (err: any) {

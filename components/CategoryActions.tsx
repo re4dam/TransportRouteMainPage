@@ -23,10 +23,6 @@ export default function CategoryActions({ id, categoryName }: { id: number, cate
         headers: { 'X-CSRF-Token': token || '' }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete. Ensure no vehicles are actively using this category before deleting.');
-      }
-
       // Success! This tells the Next.js Server Component to instantly re-fetch the data!
       router.refresh(); 
       
