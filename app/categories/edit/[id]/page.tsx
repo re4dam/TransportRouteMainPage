@@ -5,11 +5,13 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { CategoryRequest } from '@/types';
 import { apiFetch } from '@/lib/apiClient';
+import { useToast } from '@/components/ToastClient';
 
 export const dynamic = 'force-dynamic';
 
 export default function EditCategoryPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const params = useParams(); 
   const categoryId = params.id; // Grabs the ID from the URL (e.g., /categories/5/edit)
 
@@ -57,9 +59,11 @@ export default function EditCategoryPage() {
         body: JSON.stringify(payload),
       });
 
+      showToast('Category updated successfully!', 'success');
       // Success! Go back to the table
       router.push('/categories');
     } catch (err: any) {
+      showToast(err?.message || 'Failed to update category.', 'error');
       setError(err.message);
       setIsSubmitting(false);
     }

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/apiClient';
 import Link from 'next/link';
-import { useToast } from "@/components/ToastClient";
+import { useToast } from '@/components/ToastClient';
 
 export default function CategoryActions({ id, categoryName }: { id: number, categoryName: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -26,10 +26,11 @@ export default function CategoryActions({ id, categoryName }: { id: number, cate
       });
 
       showToast('Category deleted successfully!', 'success');
+      // Success! This tells the Next.js Server Component to instantly re-fetch the data!
       router.refresh(); 
       
     } catch (err: any) {
-      showToast(err?.message || "Failed to connect to the server.", 'error');
+      showToast(err?.message || 'Failed to delete category.', 'error');
     } finally {
       setIsDeleting(false);
     }

@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CategoryRequest } from '@/types';
 import { apiFetch } from '@/lib/apiClient';
+import { useToast } from '@/components/ToastClient';
 
 export const dynamic = 'force-dynamic';
 
 export default function CreateCategoryPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [categoryName, setCategoryName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,9 +35,11 @@ export default function CreateCategoryPage() {
         body: JSON.stringify(payload),
       });
 
+      showToast('Category created successfully!', 'success');
       // Kick back to the categories table on success
       router.push('/categories');
     } catch (err: any) {
+      showToast(err?.message || 'Failed to create category.', 'error');
       setError(err.message);
       setIsSubmitting(false);
     }
