@@ -1,6 +1,7 @@
 // components/CsrfInitializer.tsx
 "use client"; // This must be a client component to use useEffect and sessionStorage
 
+import { apiFetch } from '@/lib/apiClient';
 import { useEffect } from 'react';
 
 export default function CsrfInitializer() {
@@ -8,7 +9,7 @@ export default function CsrfInitializer() {
         const fetchCsrf = async () => {
             try {
                 // Adjust this URL if your API is on a different port
-                const res = await fetch('http://localhost:5285/api/Auth/csrf-token', {
+                const res = await apiFetch('/Auth/csrf-token', {
                     credentials: 'include'
                 });
                 
