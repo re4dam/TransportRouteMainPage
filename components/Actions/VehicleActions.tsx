@@ -4,10 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/apiClient';
 import Link from 'next/link';
+import { useToast } from "@/components/ToastClient";
+
+export const dynamic = 'force-dynamic';
 
 export default function VehicleActions({ id, vehicleName }: { id: number, vehicleName: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+  const { showToast } = useToast();
 
   const handleDelete = async () => {
     const confirmed = window.confirm(`Are you sure you want to delete the "${vehicleName}" vehicle?\n\nWarning: Depending on your database rules, this might also delete all associated data!`);
@@ -23,9 +27,11 @@ export default function VehicleActions({ id, vehicleName }: { id: number, vehicl
         headers: { 'X-CSRF-Token': token || '' }
       });
 
+      showToast('Vehicle deleted successfully!', 'success');
+
       router.refresh(); 
     } catch (err: any) {
-      alert(err.message); 
+      showToast(err.message, 'error');
     } finally {
       setIsDeleting(false);
     }
