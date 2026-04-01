@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar"; // Make sure this path matches where you saved it!
 import CsrfInitializer from "@/components/CsrfInitializer"; // Import the CSRF initializer
+import { ToastProvider } from "@/components/ToastClient";
 
 export const metadata: Metadata = {
   title: "TransportRoute | Dashboard",
@@ -19,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-gray-50 text-gray-900 min-h-screen flex flex-col selection:bg-purple-100 selection:text-purple-900`}>
-        
+        <ToastProvider> { children } </ToastProvider>
         <Navbar />
         <CsrfInitializer />
 
