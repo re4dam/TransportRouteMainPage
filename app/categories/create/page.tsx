@@ -29,6 +29,7 @@ export default function CreateCategoryPage() {
       const response = await apiFetch(`/Category`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token || '' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 

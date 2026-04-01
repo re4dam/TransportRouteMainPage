@@ -66,6 +66,7 @@ export default function CreateVehiclePage() {
       const response = await apiFetch(`/Vehicle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token || '' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
