@@ -1,14 +1,16 @@
 import Link from 'next/link';
 import { apiFetch } from '@/lib/apiClient';
 import VehicleActions from '@/components/Actions/VehicleActions';
+import SearchBar from '@/components/SearchBar';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function VehiclesPage(props: { searchParams: SearchParams }) {
-  // 1. Read URL parameters for Pagination
+  // 1. Read URL parameters for Pagination and Search
   const searchParams = await props.searchParams;
-  const pageParam = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 12) : 1;
+  const pageParam = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : 1;
   const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+  const keyword = typeof searchParams.keyword === 'string' ? searchParams.keyword : "";
   const pageSize = 12;
 
   // 2. Fetch the paginated data directly from the C# Backend
@@ -17,7 +19,7 @@ export default async function VehiclesPage(props: { searchParams: SearchParams }
   let totalCount = 0;
   
   try {
-    const endpoint = `/Vehicle?pageNumber=${currentPage}&pageSize=${pageSize}`;
+    const endpoint = `/Vehicle?pageNumber=${currentPage}&pageSize=${pageSize}&keyword=${encodeURIComponent(keyword)}`;
     const res = await apiFetch(endpoint, { cache: 'no-store' });
     
     if (res.ok) {
@@ -33,6 +35,14 @@ export default async function VehiclesPage(props: { searchParams: SearchParams }
     console.error("🚨 NEXT.JS FETCH CRASH:", error);
   }
 
+  // Create base URL for pagination that includes search keyword
+  const getPaginationUrl = (page: number) => {
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    if (keyword) params.set("keyword", keyword);
+    return `/vehicles?${params.toString()}`;
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* 1. Aligned Header Row */}
@@ -43,18 +53,21 @@ export default async function VehiclesPage(props: { searchParams: SearchParams }
           </h1>
           <p className="text-sm text-indigo-400 mt-2 font-medium">Manage and track your active fleet</p>
         </div>
-        <Link
-          href="/vehicles/create"
-          className="group relative inline-flex items-center justify-center px-6 py-3 text-base font-bold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:-translate-y-0.5 shadow-lg shadow-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
-        >
-          <span className="mr-2">+</span> Create Vehicles
-        </Link>
+        <div className="flex items-center gap-4">
+          <SearchBar placeholder="Search vehicles..." />
+          <Link
+            href="/vehicles/create"
+            className="group relative inline-flex items-center justify-center px-6 py-3 text-base font-bold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:-translate-y-0.5 shadow-lg shadow-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 whitespace-nowrap"
+          >
+            <span className="mr-2">+</span> Create Vehicles
+          </Link>
+        </div>
       </div>
 
       {/* Stats Badge */}
       <div className="mb-6 mt-4 flex items-center gap-2">
         <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
-          {totalCount} Total
+          {totalCount} Total {keyword && `matching "${keyword}"`}
         </span>
       </div>
 
@@ -62,8 +75,8 @@ export default async function VehiclesPage(props: { searchParams: SearchParams }
       {vehicles.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm mt-6">
           <p className="text-slate-500 text-lg font-medium">No vehicles found.</p>
-          <Link href="/" className="text-indigo-600 font-bold mt-4 inline-block hover:underline">
-            Go Back Home
+          <Link href="/vehicles" className="text-indigo-600 font-bold mt-4 inline-block hover:underline">
+            Clear filters
           </Link>
         </div>
       ) : (
@@ -112,7 +125,7 @@ export default async function VehiclesPage(props: { searchParams: SearchParams }
         <div className="flex justify-center items-center gap-4 mt-8 pt-4 border-t border-slate-100">
           {currentPage > 1 ? (
             <Link 
-              href={`/vehicles?page=${currentPage - 1}`}
+              href={getPaginationUrl(currentPage - 1)}
               className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm"
             >
               &larr; Previous
@@ -129,7 +142,7 @@ export default async function VehiclesPage(props: { searchParams: SearchParams }
 
           {currentPage < totalPages ? (
             <Link 
-              href={`/vehicles?page=${currentPage + 1}`}
+              href={getPaginationUrl(currentPage + 1)}
               className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm"
             >
               Next &rarr;

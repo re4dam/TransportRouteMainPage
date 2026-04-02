@@ -1,10 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
-export default function SearchBar() {
+interface SearchBarProps {
+  placeholder?: string;
+}
+
+export default function SearchBar({ placeholder = "Search..." }: SearchBarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   
   // Initialize the input with the current keyword from the URL if it exists
@@ -13,19 +18,22 @@ export default function SearchBar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // If there's a keyword, push it to the URL. Otherwise, reset to the home page.
+    const params = new URLSearchParams(searchParams.toString());
     if (keyword.trim()) {
-      router.push(`/?keyword=${encodeURIComponent(keyword.trim())}`);
+      params.set("keyword", keyword.trim());
+      params.set("page", "1"); // Reset to first page on search
     } else {
-      router.push("/");
+      params.delete("keyword");
     }
+    
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
     <form onSubmit={handleSearch} className="flex items-center shadow-sm">
       <input
         type="text"
-        placeholder="Search destinations..."
+        placeholder={placeholder}
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
         className="px-4 py-2 w-48 md:w-64 border border-slate-200 rounded-l-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"

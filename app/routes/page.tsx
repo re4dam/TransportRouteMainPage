@@ -2,6 +2,7 @@ import RouteActions from "@/components/Actions/RouteActions";
 import Link from "next/link";
 import { TransitRouteResponse  } from "@/types";
 import { apiFetch } from "@/lib/apiClient"; 
+import SearchBar from "@/components/SearchBar";
 
 // Next.js 15 treats searchParams as a Promise
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -11,6 +12,7 @@ export default async function Home(props: { searchParams: SearchParams }) {
   const searchParams = await props.searchParams;
   const pageParam = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : 1;
   const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+  const keyword = typeof searchParams.keyword === 'string' ? searchParams.keyword : "";
 
   // 2. Fetch paginated routes from backend
   let liveRoutes: TransitRouteResponse[] = [];
@@ -18,7 +20,7 @@ export default async function Home(props: { searchParams: SearchParams }) {
   let totalCount = 0;
 
   try {
-    const endpoint = `/TransitRoutes?pageNumber=${currentPage}&pageSize=12`;
+    const endpoint = `/TransitRoutes?pageNumber=${currentPage}&pageSize=12&keyword=${encodeURIComponent(keyword)}`;
     const res = await apiFetch(endpoint, { cache: 'no-store' });
 
     if (res.ok) {
@@ -31,6 +33,14 @@ export default async function Home(props: { searchParams: SearchParams }) {
     console.error("Failed to fetch routes:", error);
   }
 
+  // Create base URL for pagination that includes search keyword
+  const getPaginationUrl = (page: number) => {
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    if (keyword) params.set("keyword", keyword);
+    return `/routes?${params.toString()}`;
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex justify-between items-end border-b-2 border-indigo-100 pb-4">
@@ -40,26 +50,29 @@ export default async function Home(props: { searchParams: SearchParams }) {
           </h1>
           <p className="text-sm text-indigo-400 mt-2 font-medium">Manage and track your active transit paths</p>
         </div>
-        <Link
-          href="/routes/create"
-          className="group relative inline-flex items-center justify-center px-6 py-3 text-base font-bold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:-translate-y-0.5 shadow-lg shadow-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
-        >
-          <span className="mr-2">+</span> Create Routes
-        </Link>
+        <div className="flex items-center gap-4">
+          <SearchBar placeholder="Search routes..." />
+          <Link
+            href="/routes/create"
+            className="group relative inline-flex items-center justify-center px-6 py-3 text-base font-bold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:-translate-y-0.5 shadow-lg shadow-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 whitespace-nowrap"
+          >
+            <span className="mr-2">+</span> Create Routes
+          </Link>
+        </div>
       </div>
 
       {/* Stats Badge */}
       <div className="mb-6 mt-4 flex items-center gap-2">
         <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
-          {totalCount} Total
+          {totalCount} Total {keyword && `matching "${keyword}"`}
         </span>
       </div>
 
       {liveRoutes.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm mt-6">
           <p className="text-slate-500 text-lg font-medium">No routes found.</p>
-          <Link href="/" className="text-indigo-600 font-bold mt-4 inline-block hover:underline">
-            Go Back Home
+          <Link href="/routes" className="text-indigo-600 font-bold mt-4 inline-block hover:underline">
+            Clear filters
           </Link>
         </div>
       ) : (
@@ -105,7 +118,7 @@ export default async function Home(props: { searchParams: SearchParams }) {
         <div className="flex justify-center items-center gap-4 mt-8 pt-4 border-t border-slate-100">
           {currentPage > 1 ? (
             <Link 
-              href={`/routes?page=${currentPage - 1}`}
+              href={getPaginationUrl(currentPage - 1)}
               className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm"
             >
               &larr; Previous
@@ -122,7 +135,7 @@ export default async function Home(props: { searchParams: SearchParams }) {
 
           {currentPage < totalPages ? (
             <Link 
-              href={`/routes?page=${currentPage + 1}`}
+              href={getPaginationUrl(currentPage + 1)}
               className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm"
             >
               Next &rarr;
