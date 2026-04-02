@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { apiFetch } from "@/lib/apiClient";
 import { useToast } from "@/components/ToastClient";
 
@@ -113,6 +114,14 @@ export default function RegisterPage() {
             {isLoading ? "Registering..." : "Sign Up"}
           </button>
         </form>
+
+        <div className="mt-6 text-center text-sm">
+          <span className="text-gray-600">Already a member? </span>
+          <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            Sign in here
+          </Link>
+        </div>
+
       </div>
     </div>
   );
