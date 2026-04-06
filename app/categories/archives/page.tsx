@@ -10,6 +10,7 @@ export default function CategoryArchivesPage() {
                 domainName="Category"
                 fetchEndpoint="/Category/archives"
                 restoreEndpointTemplate="/Category/{id}/restore"
+                activeEntitiesPath='categories/'
             />
         </div>
     );
