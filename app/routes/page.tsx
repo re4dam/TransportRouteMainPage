@@ -4,6 +4,7 @@ import { TransitRouteResponse  } from "@/types";
 import { apiFetch } from "@/lib/apiClient"; 
 import SearchBar from "@/components/SearchBar";
 import RouteCreateButton from "@/components/CreateButton/RouteCreateButton";
+import ArchiveAccessButton from "@/components/ArchiveButton/ArchiveAccessButton";
 
 // Next.js 15 treats searchParams as a Promise
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -54,6 +55,7 @@ export default async function Home(props: { searchParams: SearchParams }) {
         <div className="flex items-center gap-4">
           <SearchBar placeholder="Search routes..." />
           <RouteCreateButton />
+          <ArchiveAccessButton href="/routes/archives" label="View Archives" />
         </div>
       </div>
 

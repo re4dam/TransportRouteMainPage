@@ -3,6 +3,7 @@ import { apiFetch } from '@/lib/apiClient';
 import CategoryActions from '@/components/Actions/CategoryActions';
 import SearchBar from '@/components/SearchBar';
 import CategoryCreateButton from '@/components/CreateButton/CategoryCreateButton';
+import ArchiveAccessButton from '@/components/ArchiveButton/ArchiveAccessButton';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -50,6 +51,7 @@ export default async function CategoriesPage(props: { searchParams: SearchParams
         <div className="flex items-center gap-4">
           <SearchBar placeholder="Search categories..." />
           <CategoryCreateButton />
+          <ArchiveAccessButton href="/categories/archives" label="View Archives" />
         </div>
       </div>
 

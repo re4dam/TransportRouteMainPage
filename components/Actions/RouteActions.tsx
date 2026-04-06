@@ -8,8 +8,8 @@ import { useToast } from "@/components/ToastClient";
 
 export default function RouteActions({ routeId }: { routeId: number }) {
   const router = useRouter();
-  const [canDelete, setCanDelete] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [canArchive, setCanArchive] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { showToast } = useToast();
 
@@ -19,36 +19,33 @@ export default function RouteActions({ routeId }: { routeId: number }) {
     const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
     const hasPermission = userRoles.includes('SuperAdmin') || userRoles.includes('RouteManager');
     setIsLoggedIn(checkLoginState);
-    setCanDelete(hasPermission);
+    setCanArchive(hasPermission);
   }, []);
 
-  const handleDelete = async () => {
-    // 1. Add a safety confirmation so users don't accidentally delete routes
-    if (!confirm("Are you sure you want to delete this route? This action cannot be undone.")) {
+  const handleArchive = async () => {
+    if (!confirm("Are you sure you want to archive this route? You can restore it later from Archives.")) {
       return;
     }
 
-    setIsDeleting(true);
+    setIsArchiving(true);
 
     const token = sessionStorage.getItem('csrf_token');
 
     try {
-      // 2. Send the DELETE request to your C# backend
-      const res = await apiFetch(`/TransitRoutes/${routeId}`, {
-        method: "DELETE",
+      await apiFetch(`/TransitRoutes/${routeId}/archive`, {
+        method: "PATCH",
         headers: {
           "X-CSRF-TOKEN": token || ""
         },
         credentials: "include"
       });
 
-      showToast("Route deleted successfully!", "success");
-      // 3. Force Next.js to re-fetch the server component data to remove the item from the screen
+      showToast("Route archived successfully!", "success");
       router.refresh();
     } catch (error) {
       console.error(error);
-      showToast("An error occurred while deleting the route.", "error");
-      setIsDeleting(false); // Only reset if it fails, otherwise let it unmount
+      showToast("An error occurred while archiving the route.", "error");
+      setIsArchiving(false);
     }
   };
 
@@ -66,19 +63,19 @@ export default function RouteActions({ routeId }: { routeId: number }) {
         </Link>
       )}
 
-      {canDelete && (
+      {canArchive && (
         <button 
-          onClick={handleDelete}
-          disabled={isDeleting}
+          onClick={handleArchive}
+          disabled={isArchiving}
           className={`p-2.5 rounded-xl transition-all shadow-sm focus:ring-2 focus:ring-rose-400 focus:outline-none ${
-            isDeleting 
+            isArchiving 
               ? "text-slate-400 bg-slate-100 cursor-wait" 
-              : "text-rose-500 bg-rose-50 hover:bg-rose-500 hover:text-white hover:shadow-md"
+              : "text-sky-600 bg-sky-50 hover:bg-sky-600 hover:text-white hover:shadow-md"
           }`}
-          aria-label="Delete route"
+          aria-label="Archive route"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M7 8V6a1 1 0 011-1h8a1 1 0 011 1v2m-9 4h8m-8 3h8m-9 4h10a2 2 0 002-2V8H5v9a2 2 0 002 2z" />
           </svg>
         </button>
       )}

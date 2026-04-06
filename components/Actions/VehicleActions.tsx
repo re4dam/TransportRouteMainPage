@@ -9,8 +9,8 @@ import { useToast } from "@/components/ToastClient";
 export const dynamic = 'force-dynamic';
 
 export default function VehicleActions({ id, vehicleName }: { id: number, vehicleName: string }) {
-  const [canDelete, setCanDelete] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [canArchive, setCanArchive] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -21,30 +21,29 @@ export default function VehicleActions({ id, vehicleName }: { id: number, vehicl
     const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
     const hasPermission = userRoles.includes('SuperAdmin') || userRoles.includes('RouteManager');
     setIsLoggedIn(checkLoginState);
-    setCanDelete(hasPermission);
+    setCanArchive(hasPermission);
   }, []);
 
-  const handleDelete = async () => {
-    const confirmed = window.confirm(`Are you sure you want to delete the "${vehicleName}" vehicle?\n\nWarning: Depending on your database rules, this might also delete all associated data!`);
+  const handleArchive = async () => {
+    const confirmed = window.confirm(`Are you sure you want to archive the "${vehicleName}" vehicle?\n\nYou can restore it later from Archives.`);
     if (!confirmed) return;
 
-    setIsDeleting(true);
+    setIsArchiving(true);
     const token = sessionStorage.getItem('csrf_token');
     
     try {
-      const response = await apiFetch(`/Vehicle/${id}`, {
-        method: 'DELETE',
+      await apiFetch(`/Vehicle/${id}/archive`, {
+        method: 'PATCH',
         credentials: 'include',
         headers: { 'X-CSRF-Token': token || '' }
       });
 
-      showToast('Vehicle deleted successfully!', 'success');
+      showToast('Vehicle archived successfully!', 'success');
 
       router.refresh(); 
     } catch (err: any) {
-      showToast(err.message, 'error');
-    } finally {
-      setIsDeleting(false);
+      showToast(err?.message || 'Failed to archive vehicle.', 'error');
+      setIsArchiving(false);
     }
   };
 
@@ -58,13 +57,13 @@ export default function VehicleActions({ id, vehicleName }: { id: number, vehicl
           Edit
         </Link>
       )}
-      {canDelete && (
+      {canArchive && (
         <button
-          onClick={handleDelete}
-          disabled={isDeleting}
-          className="flex-1 px-4 py-2 bg-rose-50 border border-rose-200 rounded-lg text-sm font-bold text-rose-700 hover:bg-rose-100 hover:border-rose-300 transition-all disabled:opacity-50"
+          onClick={handleArchive}
+          disabled={isArchiving}
+          className="flex-1 px-4 py-2 bg-sky-50 border border-sky-200 rounded-lg text-sm font-bold text-sky-700 hover:bg-sky-100 hover:border-sky-300 transition-all disabled:opacity-50"
         >
-          {isDeleting ? 'Deleting...' : 'Delete'}
+          {isArchiving ? 'Archiving...' : 'Archive'}
         </button>
       )}
     </div>

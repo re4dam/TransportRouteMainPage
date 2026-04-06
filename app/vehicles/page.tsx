@@ -3,6 +3,7 @@ import { apiFetch } from '@/lib/apiClient';
 import VehicleActions from '@/components/Actions/VehicleActions';
 import SearchBar from '@/components/SearchBar';
 import VehicleCreateButton from '@/components/CreateButton/VehicleCreateButton';
+import ArchiveAccessButton from '@/components/ArchiveButton/ArchiveAccessButton';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -57,6 +58,7 @@ export default async function VehiclesPage(props: { searchParams: SearchParams }
         <div className="flex items-center gap-4">
           <SearchBar placeholder="Search vehicles..." />
           <VehicleCreateButton />
+          <ArchiveAccessButton href="/vehicles/archives" label="View Archives" />
         </div>
       </div>
 

@@ -8,8 +8,8 @@ import { useToast } from '@/components/ToastClient';
 
 export default function CategoryActions({ id, categoryName }: { id: number, categoryName: string }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [canArchive, setCanArchive] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
 
@@ -19,31 +19,30 @@ export default function CategoryActions({ id, categoryName }: { id: number, cate
     const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
     const hasPermission = userRoles.includes('SuperAdmin') || userRoles.includes('RouteManager');
     setIsLoggedIn(checkLoginState);
-    setCanDelete(hasPermission);
+    setCanArchive(hasPermission);
   }, []);
 
-  const handleDelete = async () => {
-    const confirmed = window.confirm(`Are you sure you want to delete the "${categoryName}" category?\n\nWarning: Depending on your database rules, this might also delete all vehicles assigned to this category!`);
+  const handleArchive = async () => {
+    const confirmed = window.confirm(`Are you sure you want to archive the "${categoryName}" category?\n\nYou can restore it later from Archives.`);
     if (!confirmed) return;
 
-    setIsDeleting(true);
+    setIsArchiving(true);
     const token = sessionStorage.getItem('csrf_token');
     
     try {
-      const response = await apiFetch(`/Category/${id}`, {
-        method: 'DELETE',
+      await apiFetch(`/Category/${id}/archive`, {
+        method: 'PATCH',
         credentials: 'include',
         headers: { 'X-CSRF-Token': token || '' }
       });
 
-      showToast('Category deleted successfully!', 'success');
+      showToast('Category archived successfully!', 'success');
       // Success! This tells the Next.js Server Component to instantly re-fetch the data!
       router.refresh(); 
       
     } catch (err: any) {
-      showToast(err?.message || 'Failed to delete category.', 'error');
-    } finally {
-      setIsDeleting(false);
+      showToast(err?.message || 'Failed to archive category.', 'error');
+      setIsArchiving(false);
     }
   };
 
@@ -57,13 +56,13 @@ export default function CategoryActions({ id, categoryName }: { id: number, cate
           Edit
         </Link>
       )}
-      {canDelete && (
+      {canArchive && (
         <button
-          onClick={handleDelete}
-          disabled={isDeleting}
-          className="flex-1 px-4 py-2 bg-rose-50 border border-rose-200 rounded-lg text-sm font-bold text-rose-700 hover:bg-rose-100 hover:border-rose-300 transition-all disabled:opacity-50"
+          onClick={handleArchive}
+          disabled={isArchiving}
+          className="flex-1 px-4 py-2 bg-sky-50 border border-sky-200 rounded-lg text-sm font-bold text-sky-700 hover:bg-sky-100 hover:border-sky-300 transition-all disabled:opacity-50"
         >
-          {isDeleting ? 'Deleting...' : 'Delete'}
+          {isArchiving ? 'Archiving...' : 'Archive'}
         </button>
       )}
     </div>
