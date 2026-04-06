@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { apiFetch } from '@/lib/apiClient';
 import CategoryActions from '@/components/Actions/CategoryActions';
 import SearchBar from '@/components/SearchBar';
+import CategoryCreateButton from '@/components/CreateButton/CategoryCreateButton';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -48,12 +49,7 @@ export default async function CategoriesPage(props: { searchParams: SearchParams
         </div>
         <div className="flex items-center gap-4">
           <SearchBar placeholder="Search categories..." />
-          <Link
-            href="/categories/create"
-            className="group relative inline-flex items-center justify-center px-6 py-3 text-base font-bold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:-translate-y-0.5 shadow-lg shadow-indigo-500/30 whitespace-nowrap"
-          >
-            <span className="mr-2">+</span> Create Categories
-          </Link>
+          <CategoryCreateButton />
         </div>
       </div>
 
