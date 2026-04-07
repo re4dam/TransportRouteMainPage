@@ -13,9 +13,11 @@ export default function EditCategoryPage() {
   const router = useRouter();
   const { showToast } = useToast();
   const params = useParams(); 
-  const categoryId = params.id; // Grabs the ID from the URL (e.g., /categories/5/edit)
+  const categoryId = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const [categoryName, setCategoryName] = useState('');
+  const [description, setDescription] = useState('');
+  const [displayColor, setDisplayColor] = useState('#9CA3AF');
   const [isFetching, setIsFetching] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +27,10 @@ export default function EditCategoryPage() {
     const fetchCategory = async () => {
       try {
         const response = await apiFetch(`/Category/${categoryId}`, {credentials: 'include'});
-        if (!response.ok) throw new Error('Category not found.');
-        
         const data = await response.json();
         setCategoryName(data.categoryName);
+        setDescription(data.description ?? '');
+        setDisplayColor(data.displayColor ?? '#9CA3AF');
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -47,6 +49,8 @@ export default function EditCategoryPage() {
 
     const payload: CategoryRequest = {
       categoryName: categoryName.trim(),
+      description: description.trim(),
+      displayColor,
     };
 
     const token = sessionStorage.getItem('csrf_token');
@@ -101,6 +105,33 @@ export default function EditCategoryPage() {
               value={categoryName}
               onChange={(e) => setCategoryName(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="displayColor" className="block text-sm font-semibold text-gray-700 mb-2">
+              Display Color
+            </label>
+            <input
+              id="displayColor"
+              type="color"
+              value={displayColor}
+              onChange={(e) => setDisplayColor(e.target.value)}
+              className="w-16 h-10 p-0 border-0 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
               disabled={isSubmitting}
             />
           </div>

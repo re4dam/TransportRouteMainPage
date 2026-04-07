@@ -77,7 +77,7 @@ export default async function CategoriesPage(props: { searchParams: SearchParams
               </h2>
 
               {/* Inject the Interactive Client Component */}
-              <CategoryActions id={category.id} categoryName={category.categoryName} />
+              <CategoryActions id={category.id} categoryName={category.categoryName} description={category.description || ''} displayColor={category.displayColor || '#9CA3AF'} />
             </li>
           ))}
         </ul>

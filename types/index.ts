@@ -28,6 +28,8 @@ export interface CategoryResponse {
 
 export interface CategoryRequest {
   categoryName: string;
+  description: string;
+  displayColor: string;
 }
 
 // ==========================================
